@@ -15,28 +15,39 @@ public class MeleeWeapon : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("MeleeWeapon Start called");
         soundManager = FindObjectOfType<SoundManager>();
         gameManager = FindObjectOfType<GameManager>();
+        animator.SetBool("Swing", false);
+        isSwinging = false;
     }
 
     public void Attack()
     {
+        Debug.Log("Attack called");
         if (!isSwinging)
         {
+            Debug.Log("Starting swing animation");
             animator.SetBool("Swing", true);
-            StartCoroutine(Swing());
+            StartCoroutine(Swing(true));
         }
     }
 
-    IEnumerator Swing()
+    IEnumerator Swing(bool playSound = false)
     {
+        Debug.Log("Swing coroutine started");
         isSwinging = true;
         yield return new WaitForSeconds(0.3f);
         Hit();
-        soundManager.BatSwing();
+        if (playSound)
+        {
+            Debug.Log("Playing bat swing sound");
+            soundManager.BatSwing();
+        }
         yield return new WaitForSeconds(0.5f);
         animator.SetBool("Swing", false);
         isSwinging = false;
+        Debug.Log("Swing coroutine ended");
     }
 
     void Hit()

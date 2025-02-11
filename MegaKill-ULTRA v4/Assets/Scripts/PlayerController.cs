@@ -337,10 +337,19 @@ public class PlayerController : MonoBehaviour
             soundManager.Heartbeat();
         }
     }
-
+    
     IEnumerator Dead()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(soundManager.flatline.length);
+        
+        float remainingTime = 3f - soundManager.flatline.length;
+        if (remainingTime > 0)
+        {
+            yield return new WaitForSeconds(remainingTime);
+        }
+        
+        soundManager.ResetMute();
+        
         SceneManager.LoadScene(0);
     }
 }

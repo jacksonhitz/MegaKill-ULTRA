@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement; 
 
 public class SoundManager : MonoBehaviour
 {
@@ -52,34 +53,72 @@ public class SoundManager : MonoBehaviour
 
     public GameSpeed currentSpeed = GameSpeed.Regular;
 
+    private float originalMusicVolume;
+    private float originalSfxVolume;
+    private float originalEnemySfxVolume;
+
+    private bool shouldMuteSounds = false;
+    private bool isFlatlining = false;
+
+    private static SoundManager instance;
+
     void Awake()
     {
+        Debug.Log("SoundManager Awake called");
+        
+        if (instance != null && instance != this)
+        {
+            Debug.Log("Destroying duplicate SoundManager");
+            Destroy(gameObject);
+            return;
+        }
+        
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+        
         gameManager = FindObjectOfType<GameManager>();
         tracks = new List<AudioClip> { acid, witch, could, dj, all, hott, threes, life, real, four };
+
+        originalMusicVolume = music.volume;
+        originalSfxVolume = sfx.volume;
+        originalEnemySfxVolume = enemySfx.volume;
+    }
+
+    void OnEnable()
+    {
+        Debug.Log("SoundManager OnEnable - Adding scene load callback");
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        Debug.Log("SoundManager OnDisable - Removing scene load callback");
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     void Start()
     {
-        if (controller)
+        music.volume = originalMusicVolume;
+        sfx.volume = originalSfxVolume;
+        enemySfx.volume = originalEnemySfxVolume;
+
+        if (SceneManager.GetActiveScene().buildIndex == 0)
         {
+            Debug.Log("In title scene, playing title music");
             music.clip = title;
             music.Play();
         }
     }
 
-    void Update()
-    {
-        if (!music.isPlaying)
-        {
-            NewTrack();
-        }
-    }
-
     public void EnemySFX(AudioSource source, AudioClip sound)
     {
-        source.clip = sound;
-        source.pitch = currentSpeed == GameSpeed.Slow ? 0.75f : 1f;
-        source.Play();  
+        if (!shouldMuteSounds)
+        {
+            source.clip = sound;
+            source.volume = originalEnemySfxVolume;
+            source.pitch = currentSpeed == GameSpeed.Slow ? 0.75f : 1f;
+            source.Play();  
+        }
     }
 
     public void Stop()
@@ -106,14 +145,77 @@ public class SoundManager : MonoBehaviour
     public void BatSwing() => PlaySfx(batSwing);
 
     public void Heartbeat() => PlaySfx(heartbeat);
-    public void Flatline() => PlaySfx(flatline);
-
-    void PlaySfx(AudioClip clip)
+    
+    public void Flatline()
     {
-        sfx.clip = clip;
+        if (isFlatlining) return;
+        
+        isFlatlining = true;
+        shouldMuteSounds = true;
+        
+        sfx.volume = 0f;
+        enemySfx.volume = 0f;
+        
+        sfx.clip = flatline;
+        sfx.volume = originalSfxVolume;
         sfx.Play();
     }
 
+    void PlaySfx(AudioClip clip)
+    {
+        if (!shouldMuteSounds || clip == flatline)
+        {
+            sfx.clip = clip;
+            sfx.volume = originalSfxVolume;
+            sfx.Play();
+        }
+    }
+
+    private IEnumerator MuteAfterFlatline()
+    {
+        yield return new WaitForSeconds(sfx.clip.length);
+    
+        sfx.volume = 0f;
+    }
+
+    private void StopAllSounds()
+    {
+        if (sfx.isPlaying && sfx.clip != flatline)
+        {
+        sfx.Stop();
+        }
+        if (enemySfx.isPlaying)
+        {
+        enemySfx.Stop();
+        }
+    
+    sfx.volume = 0f;
+    enemySfx.volume = 0f;
+    }
+
+    public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"Scene loaded: {scene.name}, BuildIndex: {scene.buildIndex}");
+        
+        ResetMute();
+        
+        if (scene.buildIndex == 0)
+        {
+            Debug.Log("Loading title scene, playing title music");
+            music.Stop(); 
+            music.clip = title;
+            music.Play();
+        }
+    }
+
+    public void ResetMute()
+    {
+        shouldMuteSounds = false;
+        isFlatlining = false;
+        sfx.volume = originalSfxVolume;
+        enemySfx.volume = originalEnemySfxVolume;
+    }
+    
     public void SetSpeed(GameSpeed speed)
     {
         currentSpeed = speed;
