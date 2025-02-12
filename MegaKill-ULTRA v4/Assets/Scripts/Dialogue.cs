@@ -23,8 +23,14 @@ public class Dialogue : MonoBehaviour
     {
         if (credits)
         {
-            StartDialogue();
+            StartCoroutine(DelayDialogue());
+           
         }
+    }
+    IEnumerator DelayDialogue()
+    {
+        yield return new WaitForSeconds(3f);
+        StartDialogue();
     }
 
     void Update()
@@ -37,7 +43,7 @@ public class Dialogue : MonoBehaviour
             title.text = string.Empty;
             StartDialogue();
         }
-        else if (Input.GetKeyDown(KeyCode.Return) && waiting)
+        if (Input.GetKeyDown(KeyCode.Return) && waiting)
         {
             waiting = false;
             playerInput.Clear();
@@ -69,16 +75,8 @@ public class Dialogue : MonoBehaviour
             yield return new WaitForSeconds(textSpeed);
         }
 
-        if (lines[index].EndsWith("?"))
-        {
-            waiting = true;
-            playerInput.InputBox();
-        }
-        else
-        {
-            yield return new WaitForSeconds(1f);
-            NextLine();
-        }
+        yield return new WaitForSeconds(2f);
+        NextLine();
     }
 
     void NextLine()

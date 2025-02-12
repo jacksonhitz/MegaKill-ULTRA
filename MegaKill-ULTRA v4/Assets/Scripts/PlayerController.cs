@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
     bool hasRevolver = false;
     bool hasShotgun = false;
     bool hasBat = false;
+    public bool hasWeapon = false;
 
     public BulletTime bulletTime;
 
@@ -79,10 +80,9 @@ public class PlayerController : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
     }
 
-    void Update()
+    void CallInput()
     {
         Move();
-
         if (Input.GetKey(KeyCode.E))
         {
             Interact();
@@ -111,7 +111,6 @@ public class PlayerController : MonoBehaviour
         {
             bulletTime.Reg();
         }
-
         if (Input.GetKey(KeyCode.Q) && !onSwap)
         {
             if (ux.currentState == UX.TutorialState.Swap)
@@ -122,7 +121,6 @@ public class PlayerController : MonoBehaviour
             CycleWeapons();
             StartCoroutine(SwapCooldown());
         }
-
         if (Input.GetKey(KeyCode.Alpha1) && hasBat)
         {
             EquipWeapon(WeaponState.Bat);
@@ -154,11 +152,13 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+    }
 
-        if (!controller.isGrounded)
+    void Update()
+    {
+        if (!gameManager.intro)
         {
-            vel.y += gravity * Time.deltaTime;
-            controller.Move(vel * Time.deltaTime);
+            CallInput();
         }
     }
 
@@ -171,6 +171,7 @@ public class PlayerController : MonoBehaviour
 
     void EquipWeapon(WeaponState weapon)
     {
+        hasWeapon = true;
         currentWeapon = weapon;
         revolver.SetActive(weapon == WeaponState.Revolver);
         shotgun.SetActive(weapon == WeaponState.Shotgun);
@@ -228,6 +229,12 @@ public class PlayerController : MonoBehaviour
         Vector3 move = transform.right * horzInput + transform.forward * vertInput;
 
         controller.Move(move * runSpd * Time.deltaTime);
+
+        if (!controller.isGrounded)
+        {
+            vel.y += gravity * Time.deltaTime;
+            controller.Move(vel * Time.deltaTime);
+        }
     }
 
     void Pickup(GameObject item)

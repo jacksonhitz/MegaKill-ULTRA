@@ -1480,6 +1480,7 @@ MonoBehaviour:
   revolver: {fileID: 6804108173473441460}
   shotgun: {fileID: 5617159498268985926}
   bat: {fileID: 1215328470076295739}
+  hasWeapon: 0
   bulletTime: {fileID: 0}
 --- !u!143 &5211855445964957441
 CharacterController:
@@ -6651,7 +6652,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3949642672590258826, guid: dc1797c361c52482ba75c48b66ce9df1, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4432707211584067632, guid: dc1797c361c52482ba75c48b66ce9df1, type: 3}
       propertyPath: m_LocalPosition.x

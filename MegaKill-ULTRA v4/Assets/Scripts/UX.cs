@@ -53,8 +53,13 @@ public class UX : MonoBehaviour
         {
             initialCanvasScale = canvas.transform.localScale;
         }
-        ammoIcon.SetActive(false);
-        Tutorial(TutorialState.WASD);
+        //Tutorial(TutorialState.WASD);
+    }
+
+    public void Intro()
+    {
+
+
     }
 
     void Update()

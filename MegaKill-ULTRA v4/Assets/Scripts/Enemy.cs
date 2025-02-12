@@ -11,8 +11,8 @@ public class Enemy : MonoBehaviour
     SoundManager soundManager;
 
 
-    float detectionRange = 50f;
-    float pathfindingRange = 50f;
+    float detectionRange = 30f;
+    float pathfindingRange = 30f;
     float attackRange;
     
 
@@ -52,7 +52,10 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        LOS();
+        if (player.hasWeapon)
+        {
+            LOS();
+        }
         animator.SetFloat("spd", agent.velocity.magnitude);
         
         float distanceToPlayer = Vector3.Distance(transform.position, playerObj.transform.position);
