@@ -14,7 +14,6 @@ public class GameManager : MonoBehaviour
     UX ux;
     GameObject player;
     SoundManager soundManager;
-    Tutorial tutorial;
 
     List<NPCAI> civs;
     List<Enemy> enemies;
@@ -30,13 +29,7 @@ public class GameManager : MonoBehaviour
 
     public bool fadeOut;
 
-    public bool isIntro = false;
-
-    public GameObject bat;
-    public GameObject cia;
-    public GameObject black;
-
-    public Dialogue intro;
+    public bool intro = true;
 
 
 
@@ -47,40 +40,15 @@ public class GameManager : MonoBehaviour
         soundManager = FindObjectOfType<SoundManager>(); 
         volume = FindObjectOfType<Volume>(); 
         ux = FindObjectOfType<UX>(); 
-        tutorial = FindObjectOfType<Tutorial>(); 
-        intro = FindObjectOfType<Dialogue>(); 
         player = GameObject.FindGameObjectWithTag("Player");
 
         camMat.SetFloat("_Lerp", currentLerp);
         camMat.SetFloat("_Frequency", currentFrequency);
         camMat.SetFloat("_Amplitude", currentAmplitude);
         camMat.SetFloat("_Speed", currentSpeed);
-    }
 
-    void Start()
-    {
-        intro.CallDialogue();
-    }
-
-    public void Tutorial()
-    {
-        isIntro = false;
-        StartCoroutine(FlashIn());
-    }
-
-    IEnumerator FlashIn()
-    {
-        black.SetActive(true);
-        yield return new WaitForSeconds(0.15f);
-        black.SetActive(false);
-        yield return new WaitForSeconds(0.15f);
-        black.SetActive(true);
-        cia.SetActive(false);
-        bat.SetActive(true);
-        yield return new WaitForSeconds(0.15f);
-        black.SetActive(false);
-        ux.gameObject.SetActive(true);
-        tutorial.CallDialogue();
+        //ux.gameObject.SetActive(true);
+        ux.Intro();
     }
 
     public void ScareNPCs()
