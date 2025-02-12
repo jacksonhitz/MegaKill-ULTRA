@@ -14,28 +14,35 @@ public class Dialogue : MonoBehaviour
     int index;
     bool started = false;
     bool waiting = false;
+    GameManager gameManager;
 
-    public PlayerInput playerInput;
-
-    public bool credits;
+    public bool intro;
+    public bool tutorial;
+    public bool passed;
 
     void Start()
     {
-        if (credits)
+        gameManager = FindObjectOfType<GameManager>();
+
+        if (!tutorial)
         {
-            StartCoroutine(DelayDialogue());
-           
+            passed = true;
         }
+    }
+
+    public void CallDialogue()
+    {
+        StartCoroutine(DelayDialogue());
     }
     IEnumerator DelayDialogue()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1.5f);
         StartDialogue();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !started && !credits)
+        if (Input.GetKeyDown(KeyCode.Space) && !started && !intro)
         {
             started = true;
             textComponent.text = string.Empty;
@@ -43,10 +50,10 @@ public class Dialogue : MonoBehaviour
             title.text = string.Empty;
             StartDialogue();
         }
+
         if (Input.GetKeyDown(KeyCode.Return) && waiting)
         {
             waiting = false;
-            playerInput.Clear();
             NextLine();
         }
 
@@ -57,7 +64,7 @@ public class Dialogue : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.C) && !started)
         {
-            SceneManager.LoadScene(2);
+            //SceneManager.LoadScene(2);
         }
     }
 
@@ -75,17 +82,23 @@ public class Dialogue : MonoBehaviour
             yield return new WaitForSeconds(textSpeed);
         }
 
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
+        waiting = true;
         NextLine();
     }
 
     void NextLine()
     {
-        if (index < lines.Length - 1)
+        if (index < lines.Length - 1 && passed)
         {
             index++;
             textComponent.text = string.Empty;
             StartCoroutine(TypeLine());
+
+            if (tutorial)
+            {
+                passed = false;
+            }
         }
         else
         {
@@ -97,10 +110,10 @@ public class Dialogue : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
 
-        if (!credits)
+        if (intro)
         {
-            int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
-            SceneManager.LoadScene(nextSceneIndex);
+            textComponent.text = string.Empty;
+            gameManager.Tutorial();
         }
         else
         {

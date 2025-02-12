@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     public MeleeWeapon melee;
     public Gun gun;
     public UX ux;
+    Tutorial tutorial;
 
     float health;
     float maxHealth = 100;
@@ -78,7 +79,13 @@ public class PlayerController : MonoBehaviour
     {
         soundManager = FindObjectOfType<SoundManager>();
         gameManager = FindObjectOfType<GameManager>();
+        tutorial = FindObjectOfType<Tutorial>(); 
     }
+    void Update()
+    {
+        CallInput();
+    }
+
 
     void CallInput()
     {
@@ -97,9 +104,9 @@ public class PlayerController : MonoBehaviour
                 
                 bulletTime.Slow();
 
-                if (ux.currentState == UX.TutorialState.Slow)
+                if (tutorial.currentState == Tutorial.State.Slow)
                 {
-                    ux.Tutorial(UX.TutorialState.Grab);
+                    tutorial.States(Tutorial.State.Grab);
                 }
             }
             else
@@ -113,10 +120,6 @@ public class PlayerController : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Q) && !onSwap)
         {
-            if (ux.currentState == UX.TutorialState.Swap)
-            {
-                ux.Tutorial(UX.TutorialState.Kill);
-            }
             
             CycleWeapons();
             StartCoroutine(SwapCooldown());
@@ -146,22 +149,13 @@ public class PlayerController : MonoBehaviour
             if (currentWeapon == WeaponState.Shotgun || currentWeapon == WeaponState.Revolver)
             {
                 gun.Reload();
-                if (ux.currentState == UX.TutorialState.Reload)
+                if (tutorial.currentState == Tutorial.State.Reload)
                 {
-                    ux.Tutorial(UX.TutorialState.Off);
+                    tutorial.States(Tutorial.State.Off);
                 }
             }
         }
     }
-
-    void Update()
-    {
-        if (!gameManager.intro)
-        {
-            CallInput();
-        }
-    }
-
     IEnumerator SwapCooldown()
     {
         onSwap = true;
@@ -181,9 +175,9 @@ public class PlayerController : MonoBehaviour
 
     void HandleFire()
     {
-        if (ux.currentState == UX.TutorialState.Kill)
+        if (tutorial.currentState == Tutorial.State.WASD && (horzInput != 0 || vertInput != 0))
         {
-            ux.Tutorial(UX.TutorialState.Reload);
+            tutorial.States(Tutorial.State.Jump);
         }
 
         if (currentWeapon == WeaponState.Revolver || currentWeapon == WeaponState.Shotgun)
@@ -199,9 +193,9 @@ public class PlayerController : MonoBehaviour
 
     void Move()
     {
-        if (ux.currentState == UX.TutorialState.WASD && (horzInput != 0 || vertInput != 0))
+        if (tutorial.currentState == Tutorial.State.WASD && (horzInput != 0 || vertInput != 0))
         {
-            ux.Tutorial(UX.TutorialState.Jump);
+            tutorial.States(Tutorial.State.Jump);
         }
 
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
@@ -217,9 +211,9 @@ public class PlayerController : MonoBehaviour
         {
             vel.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
-            if (ux.currentState == UX.TutorialState.Jump)
+            if (tutorial.currentState == Tutorial.State.Jump)
             {
-                ux.Tutorial(UX.TutorialState.Slow);
+                tutorial.States(Tutorial.State.Grab);
             }
         }
 
@@ -317,9 +311,9 @@ public class PlayerController : MonoBehaviour
                 {
                     Pickup(hit.transform.gameObject);
 
-                    if (ux.currentState == UX.TutorialState.Grab)
+                    if (tutorial.currentState == Tutorial.State.Grab && (horzInput != 0 || vertInput != 0))
                     {
-                        ux.Tutorial(UX.TutorialState.Swap);
+                        tutorial.States(Tutorial.State.Kill);
                     }
                 }
             }
