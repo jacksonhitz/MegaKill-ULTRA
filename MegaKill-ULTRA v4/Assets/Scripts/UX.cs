@@ -8,6 +8,7 @@ public class UX : MonoBehaviour
     private Camera cam;
     public Vector3 offset;
     public Canvas canvas; 
+    public TextMeshProUGUI tutorial;
     public TextMeshProUGUI score;
     public TextMeshProUGUI popup;
     public TextMeshProUGUI ammo;
@@ -21,6 +22,21 @@ public class UX : MonoBehaviour
     private Vector3 initialCanvasScale;
 
     public GameObject ammoIcon;
+
+    public enum TutorialState
+    {
+        None,
+        WASD,
+        Jump,
+        Slow,
+        Grab,
+        Swap,
+        Kill,
+        Reload,
+        Off
+    }
+
+    public TutorialState currentState;
 
     void Start()
     {
@@ -37,7 +53,13 @@ public class UX : MonoBehaviour
         {
             initialCanvasScale = canvas.transform.localScale;
         }
-        UpdateAmmo();
+        //Tutorial(TutorialState.WASD);
+    }
+
+    public void Intro()
+    {
+
+
     }
 
     void Update()
@@ -118,5 +140,43 @@ public class UX : MonoBehaviour
     public void Score()
     {
         // score.text = "SCORE: " + gameManager.score;
+    }
+
+
+
+    public void Tutorial(TutorialState newState)
+    {
+        currentState = newState;
+
+        switch (currentState)
+        {
+            case TutorialState.WASD:
+                tutorial.text = "WASD TO MOVE";
+                break;
+             case TutorialState.Jump:
+                tutorial.text = "SPACE TO JUMP";
+                break;
+            case TutorialState.Grab:
+                tutorial.text = "E TO GRAB ITEMS AND WEAPONS";
+                break;   
+            case TutorialState.Slow:
+                tutorial.text = "HOLD SHIFT TO SLOW. HYPER-FOCUS IS COSTLY. FIND PILLS TO RESTORE YOUR FOCUS";
+                break;
+            case TutorialState.Swap:
+                tutorial.text = "Q TO SWAP WEAPONS";
+                break;
+            case TutorialState.Kill:
+                tutorial.text = "MOUSE TO KILL";
+                break;
+            case TutorialState.Reload:
+                tutorial.text = "R TO RELOAD";
+                break;
+            case TutorialState.Off:
+                tutorial.text = "";
+                break;
+            default:
+                tutorial.text = "";
+                break;
+        }
     }
 }

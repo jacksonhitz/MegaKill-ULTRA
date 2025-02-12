@@ -13,38 +13,29 @@ public class Dialogue : MonoBehaviour
 
     int index;
     bool started = false;
-    bool waiting = true;
-    GameManager gameManager;
-    SoundManager soundManager;
+    bool waiting = false;
 
-    public bool intro;
-    public bool tutorial;
-    public bool passed;
+    public PlayerInput playerInput;
+
+    public bool credits;
 
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
-        soundManager = FindObjectOfType<SoundManager>();
-
-        if (!tutorial)
+        if (credits)
         {
-            passed = true;
+            StartCoroutine(DelayDialogue());
+           
         }
-    }
-
-    public void CallDialogue()
-    {
-        StartCoroutine(DelayDialogue());
     }
     IEnumerator DelayDialogue()
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(3f);
         StartDialogue();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !started && !intro)
+        if (Input.GetKeyDown(KeyCode.Space) && !started && !credits)
         {
             started = true;
             textComponent.text = string.Empty;
@@ -52,31 +43,21 @@ public class Dialogue : MonoBehaviour
             title.text = string.Empty;
             StartDialogue();
         }
-
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Return) && waiting)
         {
-            index = 100;
-            textComponent.text = "";
-            StopAllCoroutines();
-
-            if (!intro)
-            {
-                SceneManager.LoadScene(1);
-            }
-            else
-            {
-                gameManager.Active();
-            }
+            waiting = false;
+            playerInput.Clear();
+            NextLine();
         }
 
         if (Input.GetKeyDown(KeyCode.X))
         {
-            index = 100;
+            SceneManager.LoadScene(1);
         }
 
         if (Input.GetKeyDown(KeyCode.C) && !started)
         {
-            //SceneManager.LoadScene(2);
+            SceneManager.LoadScene(2);
         }
     }
 
@@ -88,38 +69,23 @@ public class Dialogue : MonoBehaviour
 
     IEnumerator TypeLine()
     {
-        textComponent.text = string.Empty;
-        yield return new WaitForSeconds(.1f);
-        waiting = true;
-        
-        if (intro)
-        {
-            soundManager.NewLine();
-        }
         foreach (char c in lines[index].ToCharArray())
         {
             textComponent.text += c;
             yield return new WaitForSeconds(textSpeed);
         }
-        yield return new WaitForSeconds(1f);
-        if (intro)
-        {
-            soundManager.StopLine();
-        }
+
+        yield return new WaitForSeconds(2f);
         NextLine();
     }
 
     void NextLine()
     {
-        if (index < lines.Length - 1 && passed)
+        if (index < lines.Length - 1)
         {
             index++;
+            textComponent.text = string.Empty;
             StartCoroutine(TypeLine());
-
-            if (tutorial)
-            {
-                passed = false;
-            }
         }
         else
         {
@@ -131,15 +97,14 @@ public class Dialogue : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
 
-        if (intro)
+        if (!credits)
         {
-            textComponent.text = string.Empty;
-            gameManager.Tutorial();
+            int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+            SceneManager.LoadScene(nextSceneIndex);
         }
         else
         {
-            yield return new WaitForSeconds(2f);
-            SceneManager.LoadScene(1);
+            SceneManager.LoadScene(0);
         }
     }
 }

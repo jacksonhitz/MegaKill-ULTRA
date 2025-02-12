@@ -4,62 +4,60 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
-    public float runSpd = 5f;
-    public float jumpForce = 5f;
+    float horzInput;
+    float vertInput;
+    public float runSpd;
+    public float jumpHeight = 3f;
     public float gravity = -9.81f;
     public float range;
     public Camera cam;
     public CamController camController;
-    public Rigidbody rb;
+    public CharacterController controller;
+    Vector3 vel;
+    bool isGrounded;
     public Transform groundCheck;
     public LayerMask groundMask;
-    public float groundDistance = 0.2f;
-
-    private Vector3 movement;
-    private bool isGrounded;
+    public float groundDistance;
+    public Transform currentCar;
 
     public enum WeaponState { None, Revolver, Shotgun, Bat }
-    public WeaponState[] weaponSlots = new WeaponState[3];
+    public WeaponState[] weaponSlots = new WeaponState[3]; 
     public int currentSlot = -1;
     public WeaponState currentWeapon = WeaponState.None;
 
     public MeleeWeapon melee;
     public Gun gun;
     public UX ux;
-    Tutorial tutorial;
 
-    private float health;
-    private float maxHealth = 100;
-    public float focus;
-    private float maxFocus = 100;
+    float health;
+    float maxHealth = 100;
+    float focus;
+    float maxFocus = 100;
 
     GameManager gameManager;
     SoundManager soundManager;
 
     public bool isDead = false;
-    private float pickupRange = 10f;
+    float pickupRange = 10f;
 
     public GameObject revolver;
     public GameObject shotgun;
     public GameObject bat;
 
-    private float swapCooldown = 0.25f;
-    private bool onSwap = false;
+    float swapCooldown = 0.1f; 
+    bool onSwap = false;
 
-    private bool hasRevolver = false;
-    private bool hasShotgun = false;
-    private bool hasBat = false;
+    bool hasRevolver = false;
+    bool hasShotgun = false;
+    bool hasBat = false;
     public bool hasWeapon = false;
 
     public BulletTime bulletTime;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true;
-
         health = maxHealth;
-        focus = maxFocus;
+        focus = maxFocus / 2;
 
         ux.UpdateHealth(health, maxHealth);
         ux.UpdateFocus(focus, maxFocus);
@@ -72,121 +70,103 @@ public class PlayerController : MonoBehaviour
         {
             weaponSlots[i] = WeaponState.None;
         }
+
+        transform.Rotate(0f, 90f, 0f);
     }
 
     void Awake()
     {
         soundManager = FindObjectOfType<SoundManager>();
         gameManager = FindObjectOfType<GameManager>();
-        tutorial = FindObjectOfType<Tutorial>();
     }
 
-    void Update()
+    void CallInput()
     {
-        if (!gameManager.isIntro)
-        {
-            Move();
-            HandleInput();
-        }
-    }
-
-    void HandleInput()
-    {
+        Move();
         if (Input.GetKey(KeyCode.E))
         {
             Interact();
         }
 
-        if (Input.GetKey(KeyCode.LeftShift) && focus > 0)
+        if (Input.GetKey(KeyCode.LeftShift))
         {
-            focus -= 0.025f;
-            ux.UpdateFocus(focus, maxFocus);
-            bulletTime.Slow();
-
-            if (tutorial.currentState == Tutorial.State.Slow)
+            if(focus > 0)
             {
-                tutorial.States(Tutorial.State.Reload);
+                focus -= 0.05f;
+                ux.UpdateFocus(focus, maxFocus);
+                
+                bulletTime.Slow();
 
-                if (hasRevolver)
+                if (ux.currentState == UX.TutorialState.Slow)
                 {
-                    tutorial.passed = true;
+                    ux.Tutorial(UX.TutorialState.Grab);
                 }
+            }
+            else
+            {
+                bulletTime.Reg();
             }
         }
         else
         {
             bulletTime.Reg();
         }
-
         if (Input.GetKey(KeyCode.Q) && !onSwap)
         {
-            if (tutorial.currentState == Tutorial.State.Swap)
+            if (ux.currentState == UX.TutorialState.Swap)
             {
-                tutorial.States(Tutorial.State.Off);
-                tutorial.passed = true;
+                ux.Tutorial(UX.TutorialState.Kill);
             }
             
             CycleWeapons();
             StartCoroutine(SwapCooldown());
         }
-
-        if (Input.GetKey(KeyCode.Alpha1) && hasBat) EquipWeapon(WeaponState.Bat);
-        if (Input.GetKey(KeyCode.Alpha2) && hasRevolver) EquipWeapon(WeaponState.Revolver);
-        if (Input.GetKey(KeyCode.Alpha3) && hasShotgun) EquipWeapon(WeaponState.Shotgun);
-
-        if (Input.GetButtonDown("Fire1")) HandleFire();
-
-        if (Input.GetKey(KeyCode.R) && (currentWeapon == WeaponState.Shotgun || currentWeapon == WeaponState.Revolver))
+        if (Input.GetKey(KeyCode.Alpha1) && hasBat)
         {
-            if (tutorial.currentState == Tutorial.State.Reload)
+            EquipWeapon(WeaponState.Bat);
+        }
+
+        if (Input.GetKey(KeyCode.Alpha2) && hasRevolver)
+        {
+            EquipWeapon(WeaponState.Revolver);
+        }
+
+        if (Input.GetKey(KeyCode.Alpha3) && hasShotgun)
+        {
+            EquipWeapon(WeaponState.Shotgun);
+        }
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            HandleFire();
+        }
+
+        if (Input.GetKey(KeyCode.R))
+        {
+            if (currentWeapon == WeaponState.Shotgun || currentWeapon == WeaponState.Revolver)
             {
-                tutorial.States(Tutorial.State.Swap);
-                tutorial.passed = true;
+                gun.Reload();
+                if (ux.currentState == UX.TutorialState.Reload)
+                {
+                    ux.Tutorial(UX.TutorialState.Off);
+                }
             }
-            gun.Reload();
         }
     }
 
-    void Move()
+    void Update()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-
-        float horzInput = Input.GetAxis("Horizontal");
-        float vertInput = Input.GetAxis("Vertical");
-        movement = transform.right * horzInput + transform.forward * vertInput;
-        
-        if ((horzInput > 0 || vertInput > 0) && tutorial.currentState == Tutorial.State.WASD)
+        if (!gameManager.intro)
         {
-            tutorial.States(Tutorial.State.Jump);
-            tutorial.passed = true;
+            CallInput();
         }
+    }
 
-        rb.velocity = new Vector3(movement.x * runSpd, rb.velocity.y, movement.z * runSpd);
-
-        if (!isGrounded)
-        {
-            rb.AddForce(Vector3.up * gravity, ForceMode.Acceleration);
-        }
-
-        if (Input.GetKey(KeyCode.Space) && isGrounded)
-        {
-            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
-
-            if (tutorial.currentState == Tutorial.State.Jump)
-            {
-                if(hasBat)
-                {
-                    tutorial.index++;
-                    tutorial.States(Tutorial.State.Kill);
-                    tutorial.passed = true;
-                }
-                else
-                {
-                    tutorial.States(Tutorial.State.Grab);
-                    tutorial.passed = true;
-                }
-            }
-        }
+    IEnumerator SwapCooldown()
+    {
+        onSwap = true;
+        yield return new WaitForSeconds(swapCooldown);
+        onSwap = false;
     }
 
     void EquipWeapon(WeaponState weapon)
@@ -197,21 +177,15 @@ public class PlayerController : MonoBehaviour
         shotgun.SetActive(weapon == WeaponState.Shotgun);
         bat.SetActive(weapon == WeaponState.Bat);
         ux.UpdateAmmo();
-
-        if (weapon == WeaponState.Revolver && tutorial.currentState == Tutorial.State.Reload)
-        {
-            tutorial.passed = true;
-        }
     }
 
     void HandleFire()
     {
-        if (tutorial.currentState == Tutorial.State.Kill)
+        if (ux.currentState == UX.TutorialState.Kill)
         {
-            tutorial.States(Tutorial.State.Slow);
-            tutorial.passed = true;
+            ux.Tutorial(UX.TutorialState.Reload);
         }
-        
+
         if (currentWeapon == WeaponState.Revolver || currentWeapon == WeaponState.Shotgun)
         {
             gun.FireWeapon();
@@ -223,32 +197,48 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void Interact()
+    void Move()
     {
-        RaycastHit hit;
-        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
-
-        if (Physics.Raycast(ray, out hit, range, LayerMask.GetMask("Ground", "Item")) && hit.transform.CompareTag("Item"))
+        if (ux.currentState == UX.TutorialState.WASD && (horzInput != 0 || vertInput != 0))
         {
-            float distanceToPickup = Vector3.Distance(transform.position, hit.transform.position);
-            if (distanceToPickup <= pickupRange)
+            ux.Tutorial(UX.TutorialState.Jump);
+        }
+
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (isGrounded && vel.y < 0)
+        {
+            vel.y = -2f;
+        }
+
+        vel.y += gravity * Time.deltaTime;
+
+        if (Input.GetKey(KeyCode.Space) && isGrounded)
+        {
+            vel.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+            if (ux.currentState == UX.TutorialState.Jump)
             {
-                Pickup(hit.transform.gameObject);
-                
-                
-                if (tutorial.currentState == Tutorial.State.Grab)
-                {
-                    tutorial.States(Tutorial.State.Kill);
-                    tutorial.passed = true;
-                }
+                ux.Tutorial(UX.TutorialState.Slow);
             }
+        }
+
+        horzInput = Input.GetAxis("Horizontal");
+        vertInput = Input.GetAxis("Vertical");
+
+        Vector3 move = transform.right * horzInput + transform.forward * vertInput;
+
+        controller.Move(move * runSpd * Time.deltaTime);
+
+        if (!controller.isGrounded)
+        {
+            vel.y += gravity * Time.deltaTime;
+            controller.Move(vel * Time.deltaTime);
         }
     }
 
     void Pickup(GameObject item)
     {
-        Item itemScript = item.GetComponent<Item>();
-
         if (item.name.Contains("Pills"))
         {
             focus = maxFocus;
@@ -256,10 +246,29 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (item.name.Contains("Revolver") && !hasRevolver) { AddWeaponToSlot(WeaponState.Revolver); hasRevolver = true; }
-            else if (item.name.Contains("Shotgun") && !hasShotgun) { AddWeaponToSlot(WeaponState.Shotgun); hasShotgun = true; }
-            else if (item.name.Contains("Bat") && !hasBat) { AddWeaponToSlot(WeaponState.Bat); hasBat = true; }
+            revolver.SetActive(false);
+            shotgun.SetActive(false);
+            bat.SetActive(false);
+
+            if (item.name.Contains("Revolver") && !hasRevolver)
+            {
+                AddWeaponToSlot(WeaponState.Revolver);
+                hasRevolver = true;
+            }
+            else if (item.name.Contains("Shotgun") && !hasShotgun)
+            {
+                AddWeaponToSlot(WeaponState.Shotgun);
+                hasShotgun = true;
+            }
+            else if (item.name.Contains("Bat") && !hasBat)
+            {
+                AddWeaponToSlot(WeaponState.Bat);
+                hasBat = true;
+            }
+
         }
+        
+
         Destroy(item);
     }
 
@@ -270,7 +279,7 @@ public class PlayerController : MonoBehaviour
             if (weaponSlots[i] == WeaponState.None)
             {
                 weaponSlots[i] = weapon;
-                currentSlot = i;
+                currentSlot++;
                 EquipWeapon(weapon);
                 break;
             }
@@ -279,6 +288,7 @@ public class PlayerController : MonoBehaviour
 
     void CycleWeapons()
     {
+        int startSlot = currentSlot;
         do
         {
             currentSlot = (currentSlot + 1) % weaponSlots.Length;
@@ -287,14 +297,33 @@ public class PlayerController : MonoBehaviour
                 EquipWeapon(weaponSlots[currentSlot]);
                 break;
             }
-        } while (true);
+        } while (currentSlot != startSlot);
     }
 
-    IEnumerator SwapCooldown()
+    void Interact()
     {
-        onSwap = true;
-        yield return new WaitForSeconds(swapCooldown);
-        onSwap = false;
+        RaycastHit hit;
+        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+
+        int layerMask = LayerMask.GetMask("Ground", "Item");
+
+        if (Physics.Raycast(ray, out hit, range, layerMask))
+        {
+            if (hit.transform.CompareTag("Item"))
+            {
+                float distanceToPickup = Vector3.Distance(transform.position, hit.transform.position);
+
+                if (distanceToPickup <= pickupRange)
+                {
+                    Pickup(hit.transform.gameObject);
+
+                    if (ux.currentState == UX.TutorialState.Grab)
+                    {
+                        ux.Tutorial(UX.TutorialState.Swap);
+                    }
+                }
+            }
+        }
     }
 
     public void Hit()
@@ -302,16 +331,32 @@ public class PlayerController : MonoBehaviour
         health -= 4;
         ux.UpdateHealth(health, maxHealth);
 
-
         if (health <= 0)
         {
             isDead = true;
-            gameManager.CallDead();
+            gameManager.fadeOut = true;
             soundManager.Flatline();
+            StartCoroutine(Dead());
+            Debug.Log("KILLED");
         }
         else
         {
             soundManager.Heartbeat();
         }
+    }
+    
+    IEnumerator Dead()
+    {
+        yield return new WaitForSeconds(soundManager.flatline.length);
+        
+        float remainingTime = 3f - soundManager.flatline.length;
+        if (remainingTime > 0)
+        {
+            yield return new WaitForSeconds(remainingTime);
+        }
+        
+        soundManager.ResetMute();
+        
+        SceneManager.LoadScene(0);
     }
 }
