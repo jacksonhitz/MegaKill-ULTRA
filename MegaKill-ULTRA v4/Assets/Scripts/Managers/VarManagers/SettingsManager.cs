@@ -2,23 +2,32 @@ using UnityEngine;
 
 public class SettingsManager : MonoBehaviour
 {
-    public static SettingsManager Instance { get; private set; }
-
     public float MusicVolume { get; private set; } = 50;
     public float SFXVolume { get; private set; } = 50;
     public float Sensitivity { get; private set; } = 500;
 
     SoundManager sound;
 
-    void Awake()
+    //Instance tracking/singleton management
+    private static SettingsManager _instance;
+    public static SettingsManager Instance
     {
-        if (Instance != null)
+        get
         {
-            Destroy(gameObject);
-            return;
+            if (_instance is null) Debug.LogError("Settings Manager is NULL");
+            return _instance;
         }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+    }
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            _instance = this;
+        }
     }
 
     void OnEnable()

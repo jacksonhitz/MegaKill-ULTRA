@@ -27,9 +27,9 @@ public class Enemy : MonoBehaviour, IHitable, IInteractable
     // REFERENCES
     [HideInInspector] public NavMeshAgent agent;
     [HideInInspector] public PlayerController player;
-    [HideInInspector] public GameManager gameManager;
+    // [HideInInspector] public GameManager gameManager;
     [HideInInspector] public SoundManager soundManager;
-    [HideInInspector] public EnemyManager enemyManager;
+    // [HideInInspector] public EnemyManager enemyManager;
     [HideInInspector] public Animator animator;
     [HideInInspector] public AudioSource sfx;
 
@@ -79,9 +79,9 @@ public class Enemy : MonoBehaviour, IHitable, IInteractable
 
         animator = GetComponentInChildren<Animator>();
         player = FindObjectOfType<PlayerController>();
-        gameManager = FindObjectOfType<GameManager>();
+        // gameManager = FindObjectOfType<GameManager>();
         soundManager = FindObjectOfType<SoundManager>();
-        enemyManager = FindObjectOfType<EnemyManager>();
+        // enemyManager = FindObjectOfType<EnemyManager>();
 
         festival = FindObjectOfType<Festival>();
 
@@ -305,7 +305,7 @@ public class Enemy : MonoBehaviour, IHitable, IInteractable
         }
 
         // Look for other enemies to fight
-        foreach (Enemy enemy in enemyManager.enemies)
+        foreach (Enemy enemy in EnemyManager.Instance.enemies)
         {
             if (enemy == this || enemy.isDead) continue;
 
@@ -314,7 +314,7 @@ public class Enemy : MonoBehaviour, IHitable, IInteractable
 
             // Limit dogpiling: max 3 attackers per target
             int currentAttackers = 0;
-            foreach (Enemy other in enemyManager.enemies)
+            foreach (Enemy other in EnemyManager.Instance.enemies)
             {
                 if (other == this || other.isDead) continue;
                 if (other.target == enemy.gameObject)
@@ -427,7 +427,9 @@ public class Enemy : MonoBehaviour, IHitable, IInteractable
 
         isDead = true;
         StopAllCoroutines();
-        enemyManager.Kill(this);
+        Debug.Log("ENEMY MANAGER:");
+        Debug.Log(EnemyManager.Instance);
+        EnemyManager.Instance.Kill(this);
         DropItem();
 
         if (!hasSpawnedDeathEffect && deathEffect != null)

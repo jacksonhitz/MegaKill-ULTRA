@@ -17,12 +17,14 @@ public class EnemySpawning : MonoBehaviour
     [Header("Spawning Settings")]
     [SerializeField] private float spawnInterval = 5f;
     [SerializeField] private int numberOfSpawns = 5;
+    [SerializeField] private int maxEnemiesAtOnce = 10000; //Set really high for a "don't care"
     [SerializeField] private bool requireOutOfView = true;
 
     [Header("Player Reference")]
     [SerializeField] private Camera playerCamera;
 
     private int spawnsCompleted = 0;
+    private int currentEnemyCount = 0;
     private float spawnTimer;
 
     void Start()
@@ -36,7 +38,8 @@ public class EnemySpawning : MonoBehaviour
 
     void Update()
     {
-        if (spawnsCompleted >= numberOfSpawns) return;
+        currentEnemyCount = CountEnemies();
+        if (spawnsCompleted >= numberOfSpawns || currentEnemyCount >= maxEnemiesAtOnce) return;
 
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f)
@@ -64,6 +67,11 @@ public class EnemySpawning : MonoBehaviour
                 }
             }
         }
+    }
+
+    private int CountEnemies()
+    {
+        return GameObject.FindGameObjectsWithTag("Enemy").Length;
     }
 
     private bool IsVisibleToCamera()

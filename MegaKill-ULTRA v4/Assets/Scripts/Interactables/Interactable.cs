@@ -4,6 +4,7 @@ using UnityEngine;
 public class Interactable : MonoBehaviour, IInteractable
 {
     Renderer rend;
+    Collider col;
     Material def;
     [SerializeField] Material glow;
 
@@ -27,13 +28,18 @@ public class Interactable : MonoBehaviour, IInteractable
 
     public virtual void Interact()
     {
-        if (type == Type.Door) rend.enabled = false;
+        if (type == Type.Door)
+        {
+            rend.enabled = false;
+            col.enabled = false;
+        }
         else if (type == Type.Extract && StateManager.State == StateManager.GameState.FIGHT) StateManager.NextState();
     }
 
     public virtual void Awake()
     {
         rend = GetComponent<Renderer>();
+        col = GetComponent<Collider>();
         def = rend.materials[0];
         sound = SoundManager.Instance;
     }

@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/TANGO/TANGO.unity
     guid: 25cf10155f289b24ebc42b8a24f731a7
   - enabled: 1
-    path: Assets/Scenes/SABLE/SABLE.unity
+    path: Assets/Scenes/RUSSIALEVEL/RUSSIAWIP.unity
     guid: 3cee15655b68b144f8162ee92bf2adc0
   - enabled: 1
     path: Assets/Scenes/SPEARHEAD/SPEARHEAD.unity

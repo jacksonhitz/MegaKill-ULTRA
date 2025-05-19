@@ -18,7 +18,7 @@ public class Tutorial : MonoBehaviour
     private List<TMP_Text> controls = new List<TMP_Text>();
 
     //Bools of whether actions are actually done. Same correspondance as controls
-    private List<bool> completion = new List<bool>{ false, false, false, false };
+    private List<bool> completion = new List<bool> { false, false, false, false };
 
     //Reusable values
     [SerializeField]
@@ -48,9 +48,9 @@ public class Tutorial : MonoBehaviour
         StateManager.LoadState(StateManager.GameState.TUTORIAL);
     }
 
-    void Update() 
+    void Update()
     {
-        switch (TutorialStateManager.State) 
+        switch (TutorialStateManager.State)
         {
             case TutorialStateManager.TutorialState.WASD:
                 WASD();
@@ -72,6 +72,9 @@ public class Tutorial : MonoBehaviour
                 break;
             case TutorialStateManager.TutorialState.Throw:
                 Throw();
+                break;
+            case TutorialStateManager.TutorialState.Interact:
+                Interact();
                 break;
         }
         if (leftHand.childCount > 0)
@@ -106,7 +109,7 @@ public class Tutorial : MonoBehaviour
             controls[1].color = done;
             completion[1] = true;
         }
-        if (Input.GetKeyDown(KeyCode.S) && !completion[2]) 
+        if (Input.GetKeyDown(KeyCode.S) && !completion[2])
         {
             controls[2].color = done;
             completion[2] = true;
@@ -203,19 +206,33 @@ public class Tutorial : MonoBehaviour
         //Check if both are done
         if (completion[1] && completion[3])
         {
-            TutorialStateManager.State = TutorialStateManager.TutorialState.Items;
+            // TutorialStateManager.State = TutorialStateManager.TutorialState.Items;
             completion[1] = completion[3] = false;
             //Set on-screen text/color/visibility
-            instruction.text = "HIGHLIGHT";
-            controls[2].gameObject.SetActive(true);
-            controls[2].color = todo;
-            controls[2].text = "TAB";
-            controls[0].color = todo;
-            controls[0].gameObject.SetActive(false);
-            controls[1].gameObject.SetActive(false);
-            controls[3].gameObject.SetActive(false);
+            // instruction.text = "HIGHLIGHT";
+            // controls[2].gameObject.SetActive(true);
+            // controls[2].color = todo;
+            // controls[2].text = "TAB";
+            // controls[0].color = todo;
+            // controls[0].gameObject.SetActive(false);
+            // controls[1].gameObject.SetActive(false);
+            // controls[3].gameObject.SetActive(false);
 
-            Debug.Log("Changed state to Items");
+            // Debug.Log("Changed state to Items");
+            TutorialStateManager.State = TutorialStateManager.TutorialState.Use;
+            instruction.text = "USE";
+            controls[0].gameObject.SetActive(true);
+            controls[0].color = header;
+            controls[0].text = "CLICK";
+            controls[1].gameObject.SetActive(true);
+            controls[1].color = todo;
+            controls[1].text = "LEFT";
+            controls[2].gameObject.SetActive(false);
+            controls[3].gameObject.SetActive(true);
+            controls[3].color = todo;
+            controls[3].text = "RIGHT";
+
+            Debug.Log("Changed state to Use");
         }
     }
     void Items()
@@ -277,46 +294,53 @@ public class Tutorial : MonoBehaviour
         {
             controls[1].color = done;
             completion[1] = true;
-            //First time - pickup flips "lPickup" to true
-            // if (!lPickup)
-            // {
-            //     lPickup = true;
-            // }
-            // else
-            // {
-            //     controls[1].color = done;
-            //     completion[1] = true;
-            // }
         }
         if (Input.GetKeyDown(KeyCode.E) && !completion[3] && itemHeldR)
         {
             controls[3].color = done;
             completion[3] = true;
-            //First time - pickup flips "rPickup" to true
-            // if (!rPickup)
-            // {
-            //     rPickup = true;
-            // }
-            // else
-            // {
-            //     controls[3].color = done;
-            //     completion[3] = true;
-            // }
         }
 
         //Check if both are done - end tutorial if so
         if (completion[1] && completion[3])
         {
-            TutorialStateManager.State = TutorialStateManager.TutorialState.Done;
+            TutorialStateManager.State = TutorialStateManager.TutorialState.Interact;
             completion[1] = completion[3] = false;
             //Set on-screen text/color/visibility
+            instruction.text = "INTERACT";
             controls[0].color = todo;
             controls[0].gameObject.SetActive(false);
             controls[1].gameObject.SetActive(false);
+            controls[2].gameObject.SetActive(true);
+            controls[2].color = todo;
+            controls[2].text = "F";
             controls[3].gameObject.SetActive(false);
 
-            // load scene
+            Debug.Log("Changed state to Interact");
 
+        }
+    }
+
+    void Interact()
+    {
+        //F to interact (with door)
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            TutorialStateManager.State = TutorialStateManager.TutorialState.Fight;
+            //Set on-screen text/color/visibility
+            instruction.text = "FIGHT";
+            controls[2].gameObject.SetActive(false);
+
+            Debug.Log("Changed state to Punch");
+        }
+    }
+
+    void Fight()
+    {
+        //Interact with the backdoor to exit the scene
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            //Change to last scene
             StateManager.LoadState(StateManager.GameState.TANGO);
         }
     }
@@ -334,6 +358,8 @@ public static class TutorialStateManager
         Pickup,
         Use,
         Throw,
+        Interact,
+        Fight,
         Done
     }
 
@@ -352,7 +378,9 @@ public static class TutorialStateManager
         TutorialState.Pickup,
         TutorialState.Use,
         TutorialState.Throw,
-        TutorialState.Done
+        TutorialState.Interact,
+        TutorialState.Fight,
+        TutorialState.Done,
     };
 
     public static TutorialState State
