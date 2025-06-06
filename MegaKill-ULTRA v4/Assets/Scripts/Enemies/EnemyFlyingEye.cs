@@ -22,10 +22,14 @@ public class EnemyFlyingEye : Enemy
     protected override void Start()
     {
         base.Start(); // important!
+
         rb = GetComponent<Rigidbody>();
         attackRange = 25f;
         attackRate = 5f;
         dmg = 20f;
+
+        currentState = EnemyState.Active;
+        target = PlayerController.Instance.gameObject;
     }
 
     protected override void CallAttack()

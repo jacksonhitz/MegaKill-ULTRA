@@ -4049,6 +4049,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2527585751099497462, guid: 74efeb2ea6b0f499b879e3bce9313719, type: 3}
+      propertyPath: far clip plane
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 2696409501945406757, guid: 74efeb2ea6b0f499b879e3bce9313719, type: 3}
       propertyPath: m_Enabled
       value: 0
