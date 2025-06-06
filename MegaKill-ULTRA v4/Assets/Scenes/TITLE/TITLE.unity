@@ -5252,7 +5252,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textComponent: {fileID: 1908254208}
   lines:
-  - 'WARNING: THIS GAME MAY TRIGGER EPILEPSY. VIEWER DISCRESTION ADVISED.'
+  - ' WARNING: INTENSE FLASHING LIGHTS AND COLORS. VIEWER DISCRETION ADVISED. '
   textSpeed: 0.05
 --- !u!114 &1908254208
 MonoBehaviour:
