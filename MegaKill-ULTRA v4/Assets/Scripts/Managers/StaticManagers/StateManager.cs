@@ -132,9 +132,12 @@ public static class StateManager
 
         if (Scene.Contains(newState))
         {
-            SceneManager.LoadScene(newState.ToString());
             Debug.Log("Loading Scene: " + newState);
-
+            var loadingOperation = SceneManager.LoadSceneAsync(newState.ToString(), LoadSceneMode.Single);
+            while (!loadingOperation?.isDone ?? true) 
+            {
+                yield return null;
+            }
             if (Active.Contains(newState) && lvl != newState)
             {
                 State = GameState.FILE;
