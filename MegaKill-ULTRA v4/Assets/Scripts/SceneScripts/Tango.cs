@@ -72,43 +72,43 @@ public class Tango : ScenesManager
     {
         started = true;
 
-        dialogue.TypeText("LADIES AND GENTLEMEN! THE GROOVES WILL START IN 1 MINUTE, MAKE YOUR WAY TO THE MAIN STAGE!", 0f);
+        Info.Instance.TypeText("LADIES AND GENTLEMEN! THE GROOVES WILL START IN 1 MINUTE, MAKE YOUR WAY TO THE MAIN STAGE!", 0f);
         yield return new WaitForSeconds(10f);
-        dialogue.Off();
+        Info.Instance.Off();
         yield return new WaitForSeconds(20f);
-        dialogue.TypeText("30 SECONDS!", 0f);
+        Info.Instance.TypeText("30 SECONDS!", 0f);
         yield return new WaitForSeconds(10f);
-        dialogue.Off();
+        Info.Instance.Off();
         yield return new WaitForSeconds(10f);
-        dialogue.TypeText("10!", 0f);
+        Info.Instance.TypeText("10!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("9!", 0f);
+        Info.Instance.TypeText("9!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("8!", 0f);
+        Info.Instance.TypeText("8!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("7!", 0f);
+        Info.Instance.TypeText("7!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("6!", 0f);
+        Info.Instance.TypeText("6!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("5!", 0f);
+        Info.Instance.TypeText("5!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("4!", 0f);
+        Info.Instance.TypeText("4!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("3!", 0f);
+        Info.Instance.TypeText("3!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("2!", 0f);
+        Info.Instance.TypeText("2!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.TypeText("1!", 0f);
+        Info.Instance.TypeText("1!", 0f);
         yield return new WaitForSeconds(1f);
-        dialogue.Off();
+        Info.Instance.Off();
 
         StateManager.State = StateManager.GameState.TANGO2;
 
-        SoundManager.Instance.Play("Acid");
+        SoundManager.Instance.Play("Magic");
         InteractionManager.Instance.ExtractOn();
         EnemyManager.Instance.Brawl();
 
-        dialogue.TypeText("F ON ANY VAN TO EXTRACT", 0f);
+        Info.Instance.TypeText("F ON ANY VAN TO EXTRACT", 0f);
     }
 
     void NewsDialogue()
