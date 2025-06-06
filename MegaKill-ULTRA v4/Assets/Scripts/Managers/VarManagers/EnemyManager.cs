@@ -98,7 +98,7 @@ public class EnemyManager : MonoBehaviour
 
     public void CallHands()
     {
-         StartCoroutine(SpawnHands());
+        // StartCoroutine(SpawnHands());
     }
 
     IEnumerator SpawnHands()
